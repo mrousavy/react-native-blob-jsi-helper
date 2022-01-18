@@ -2,6 +2,7 @@ package com.reactnativeblobjsihelper;
 
 import androidx.annotation.NonNull;
 
+import com.facebook.react.bridge.JavaScriptContextHolder;
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -27,7 +28,8 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
     public boolean install() {
         try {
             System.loadLibrary("blobjsihelper");
-            nativeInstall();
+            JavaScriptContextHolder jsContext = getReactApplicationContext().getJavaScriptContextHolder();
+            nativeInstall(jsContext.get(), this);
             return true;
         } catch (Exception ignored) {
             return false;
@@ -40,5 +42,5 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
       return blobModule.resolve(blobId, offset, size);
     }
 
-    public static native void nativeInstall();
+    public static native void nativeInstall(long jsiPointer, BlobJsiHelperModule instance);
 }
