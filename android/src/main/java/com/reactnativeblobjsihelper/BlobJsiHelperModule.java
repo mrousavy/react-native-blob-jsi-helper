@@ -1,5 +1,7 @@
 package com.reactnativeblobjsihelper;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.JavaScriptContextHolder;
@@ -27,7 +29,7 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean install() {
         try {
-            System.loadLibrary("blobjsihelper");
+            System.loadLibrary("reactnativeblobjsihelper");
             JavaScriptContextHolder jsContext = getReactApplicationContext().getJavaScriptContextHolder();
             nativeInstall(jsContext.get(), this);
             return true;
@@ -37,9 +39,15 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
     }
 
     public byte[] getBlobBuffer(String blobId, int offset, int size) {
+      Log.d(NAME, "Resolving Blob #" + blobId + "... (" + offset + "..." + size + ")");
       BlobModule blobModule = getReactApplicationContext().getNativeModule(BlobModule.class);
       if (blobModule == null) throw new RuntimeException("React Native's BlobModule was not found!");
-      return blobModule.resolve(blobId, offset, size);
+      byte[] bytes = blobModule.resolve(blobId, offset, size);
+      if (bytes == null) {
+        throw new RuntimeException("Failed to resolve Blob #" + blobId + "! Not found.");
+      }
+      Log.d(NAME, "Resolved Blob #" + blobId + "! Size: " + bytes.length);
+      return bytes;
     }
 
     public static native void nativeInstall(long jsiPointer, BlobJsiHelperModule instance);

@@ -2,6 +2,7 @@
 #include <jsi/jsi.h>
 #include <string>
 #include "../cpp/JSI Utils/TypedArray.h"
+#include <android/log.h>
 
 using namespace facebook;
 
@@ -28,15 +29,17 @@ void install(jsi::Runtime& jsiRuntime, std::function<byte*(const std::string& bl
         jsi::Object data = arguments[0].asObject(runtime);
         auto blobId = data.getProperty(runtime, "blobId").asString(runtime);
         auto offset = data.getProperty(runtime, "offset").asNumber();
-        auto size = data.getProperty(runtime, "offset").asNumber();
+        auto size = data.getProperty(runtime, "size").asNumber();
 
-        auto bytes = getBytesFromBlob(blobId.utf8(runtime), offset, size);
+        uint8_t* bytes = getBytesFromBlob(blobId.utf8(runtime), offset, size);
 
-        auto totalSize = size - offset;
+        size_t totalSize = size - offset;
         auto typedArray = TypedArray<TypedArrayKind::Uint8Array>(runtime, totalSize);
         auto arrayBuffer = typedArray.getBuffer(runtime);
+                                                                           __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Copying memory...");
 
-        memcpy(arrayBuffer.data(runtime), bytes, totalSize);
+        memcpy(arrayBuffer.data(runtime), bytes, 5);
+                                                                           __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Returned!");
 
         return typedArray;
     });
@@ -46,17 +49,22 @@ void install(jsi::Runtime& jsiRuntime, std::function<byte*(const std::string& bl
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env, jclass _, jlong jsiPtr, jobject instance) {
+    auto instanceGlobal = env->NewGlobalRef(instance);
     auto getBytesFromBlob = [=](const std::string& blobId, int offset, int size) -> byte* {
         if (!env) throw std::runtime_error("JNI Environment is gone!");
 
-        jclass clazz = env->GetObjectClass(instance);
-        jmethodID getBufferJava = env->GetMethodID(clazz, "getBlobBuffer", "()[B");
-        jobject boxedBytes = env->CallObjectMethod(instance,
+        // get java class
+        jclass clazz = env->GetObjectClass(instanceGlobal);
+        // get method in java class
+        jmethodID getBufferJava = env->GetMethodID(clazz, "getBlobBuffer", "(Ljava/lang/String;II)[B");
+        // call method
+        jobject boxedBytes = env->CallObjectMethod(instanceGlobal,
                                                    getBufferJava,
                                                    // arguments
                                                    env->NewStringUTF(blobId.c_str()),
                                                    offset,
                                                    size);
+        // cast jobject -> byte[] (unbox)
         auto* bytes = (jbyte*)boxedBytes;
         return (byte*)bytes;
     };
