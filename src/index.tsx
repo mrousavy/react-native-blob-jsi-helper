@@ -6,17 +6,14 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo managed workflow\n';
 
-const BlobJsiHelper = NativeModules.BlobJsiHelper
-  ? NativeModules.BlobJsiHelper
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+const BlobJsiHelper = NativeModules.BlobJsiHelper;
 
-export function multiply(a: number, b: number): Promise<number> {
-  return BlobJsiHelper.multiply(a, b);
+if (BlobJsiHelper == null) {
+  throw new Error(LINKING_ERROR);
+}
+
+BlobJsiHelper.install();
+
+export function getArrayBuffer(blob: Blob): ArrayBuffer {
+  return global.getArrayBufferForBlobId(blob.id);
 }
