@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <jsi/jsi.h>
 #include <string>
+#include "../cpp/JSI Utils/TypedArray.h"
 
 using namespace facebook;
 
@@ -11,7 +12,7 @@ std::string getPropertyAsStringOrEmptyFromObject(jsi::Object& object, const std:
 
 typedef u_int8_t byte;
 
-void install(jsi::Runtime& jsiRuntime, std::function<byte*(std::string blobId, int offset, int size)> getBytesFromBlob) {
+void install(jsi::Runtime& jsiRuntime, std::function<byte*(const std::string& blobId, int offset, int size)> getBytesFromBlob) {
     // getArrayBufferForBlobId()
     auto getArrayBufferForBlobId = jsi::Function::createFromHostFunction(jsiRuntime,
                                                                        jsi::PropNameID::forAscii(jsiRuntime, "getArrayBufferForBlobId"),
@@ -20,20 +21,32 @@ void install(jsi::Runtime& jsiRuntime, std::function<byte*(std::string blobId, i
                                                                            const jsi::Value& thisValue,
                                                                            const jsi::Value* arguments,
                                                                            size_t count) -> jsi::Value {
-                                                                         if (count != 1) {
-                                                                             throw jsi::JSError(runtime, "getArrayBufferForBlobId(..) expects one argument (object)!");
-                                                                         }
-                                                                         jsi::Object config = arguments[0].asObject(runtime);
+        if (count != 1) {
+            throw jsi::JSError(runtime, "getArrayBufferForBlobId(..) expects one argument (object)!");
+        }
 
-                                                                         return jsi::Value::undefined();
-                                                                       });
+        jsi::Object data = arguments[0].asObject(runtime);
+        auto blobId = data.getProperty(runtime, "blobId").asString(runtime);
+        auto offset = data.getProperty(runtime, "offset").asNumber();
+        auto size = data.getProperty(runtime, "offset").asNumber();
+
+        auto bytes = getBytesFromBlob(blobId.utf8(runtime), offset, size);
+
+        auto totalSize = size - offset;
+        auto typedArray = TypedArray<TypedArrayKind::Uint8Array>(runtime, totalSize);
+        auto arrayBuffer = typedArray.getBuffer(runtime);
+
+        memcpy(arrayBuffer.data(runtime), bytes, totalSize);
+
+        return typedArray;
+    });
     jsiRuntime.global().setProperty(jsiRuntime, "getArrayBufferForBlobId", std::move(getArrayBufferForBlobId));
 }
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env, jobject _, jlong jsiPtr, jobject instance) {
-    auto getBytesFromBlob = [=](std::string blobId, int offset, int size) -> byte* {
+Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env, jclass _, jlong jsiPtr, jobject instance) {
+    auto getBytesFromBlob = [=](const std::string& blobId, int offset, int size) -> byte* {
         if (!env) throw std::runtime_error("JNI Environment is gone!");
 
         jclass clazz = env->GetObjectClass(instance);
@@ -44,7 +57,7 @@ Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env,
                                                    env->NewStringUTF(blobId.c_str()),
                                                    offset,
                                                    size);
-        jbyte* bytes = (jbyte*)boxedBytes;
+        auto* bytes = (jbyte*)boxedBytes;
         return (byte*)bytes;
     };
 
