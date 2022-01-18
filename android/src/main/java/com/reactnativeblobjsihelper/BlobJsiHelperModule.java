@@ -22,18 +22,15 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
         return NAME;
     }
 
-    static {
-        try {
-            // Used to load the 'native-lib' library on application startup.
-            System.loadLibrary("blobjsihelper");
-        } catch (Exception ignored) {
-        }
-    }
-
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean install() {
-        nativeInstall();
-        return true;
+        try {
+            System.loadLibrary("blobjsihelper");
+            nativeInstall();
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     public static native void nativeInstall();
