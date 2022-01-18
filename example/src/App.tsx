@@ -8,14 +8,20 @@ export default function App() {
 
   React.useEffect(() => {
     (async () => {
-      console.log('Fetching google..');
-      const x = await fetch('https://google.com');
+      console.log('Fetching 8k image..');
+      const x = await fetch(
+        'https://www.hdwallpapers.in/download/beautiful_lake_landscape_scenery_4k_8k-HD.jpg'
+      );
       console.log('Getting blob..');
       const blob = await x.blob();
       console.log(`Blob: ${Object.keys(blob)}..`);
       console.log('Getting ArrayBuffer..');
+      const start = performance.now();
       const arrayBuffer = getArrayBuffer(blob);
-      console.log(`ArrayBuffer: ${arrayBuffer.byteLength}..`);
+      const end = performance.now();
+      console.log(
+        `Got ArrayBuffer in ${end - start}ms! Size: ${arrayBuffer.byteLength}`
+      );
     })();
   }, []);
 
