@@ -58,12 +58,15 @@ Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env,
         // get method in java class
         jmethodID getBufferJava = env->GetMethodID(clazz, "getBlobBuffer", "(Ljava/lang/String;II)[B");
         // call method
+        auto jstring = env->NewStringUTF(blobId.c_str());
         jobject boxedBytes = env->CallObjectMethod(instanceGlobal,
                                                    getBufferJava,
                                                    // arguments
-                                                   env->NewStringUTF(blobId.c_str()),
+                                                   jstring,
                                                    offset,
                                                    size);
+        env->ReleaseStringUTFChars(jstring, blobId.c_str());
+
         // cast jobject -> byte[] (unbox)
         auto* bytes = (jbyte*)boxedBytes;
         return (byte*)bytes;
