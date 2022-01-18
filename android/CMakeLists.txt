@@ -4,6 +4,7 @@ set (PACKAGE_NAME "react-native-blob-jsi-helper")
 set (BUILD_DIR ${CMAKE_SOURCE_DIR}/build)
 
 include_directories(
+        "../cpp"
         "${NODE_MODULES_DIR}/react-native/React"
         "${NODE_MODULES_DIR}/react-native/React/Base"
         "${NODE_MODULES_DIR}/react-native/ReactCommon/jsi"
@@ -19,6 +20,7 @@ endif()
 add_library(reactnativeblobjsihelper  # <-- Library name
         SHARED
         src/main/cpp/cpp-adapter.cpp
+        "../cpp/JSI Utils/TypedArray.cpp"
         ${INCLUDE_JSI_CPP} # only on older RN versions
 )
 

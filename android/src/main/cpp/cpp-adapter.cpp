@@ -1,5 +1,6 @@
 #include <jni.h>
 #include <jsi/jsi.h>
+#include <string>
 
 using namespace facebook;
 
@@ -8,7 +9,9 @@ std::string getPropertyAsStringOrEmptyFromObject(jsi::Object& object, const std:
     return value.isString() ? value.asString(runtime).utf8(runtime) : "";
 }
 
-void install(jsi::Runtime& jsiRuntime, JNIEnv* env) {
+typedef u_int8_t byte;
+
+void install(jsi::Runtime& jsiRuntime, std::function<byte*(std::string blobId, int offset, int size)> getBytesFromBlob) {
     // getArrayBufferForBlobId()
     auto getArrayBufferForBlobId = jsi::Function::createFromHostFunction(jsiRuntime,
                                                                        jsi::PropNameID::forAscii(jsiRuntime, "getArrayBufferForBlobId"),
@@ -30,18 +33,24 @@ void install(jsi::Runtime& jsiRuntime, JNIEnv* env) {
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env, jobject _, jlong jsiPtr, jobject instance) {
-    auto getBuffer = [=]() {
+    auto getBytesFromBlob = [=](std::string blobId, int offset, int size) -> byte* {
         if (!env) throw std::runtime_error("JNI Environment is gone!");
 
-        jclass clazz = env->GetObjectClass(env, instance);
-        jmethodID getBufferJava = env->GetMethodID(env, clazz, "getBlobBuffer", "()V");
-        env->CallVoidMethod(env, instance, getBufferJava);
+        jclass clazz = env->GetObjectClass(instance);
+        jmethodID getBufferJava = env->GetMethodID(clazz, "getBlobBuffer", "()[B");
+        jobject boxedBytes = env->CallObjectMethod(instance,
+                                                   getBufferJava,
+                                                   // arguments
+                                                   env->NewStringUTF(blobId.c_str()),
+                                                   offset,
+                                                   size);
+        jbyte* bytes = (jbyte*)boxedBytes;
+        return (byte*)bytes;
     };
-
 
     auto runtime = reinterpret_cast<jsi::Runtime*>(jsiPtr);
     if (runtime) {
-        install(*runtime, env);
+        install(*runtime, getBytesFromBlob);
     }
     // if runtime was nullptr, the helper will not be installed. This should only happen while Remote Debugging (Chrome), but will be weird either way.
 }
