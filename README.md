@@ -11,11 +11,12 @@ npm install react-native-blob-jsi-helper
 ## Usage
 
 ```js
-import { multiply } from "react-native-blob-jsi-helper";
+import { getArrayBuffer } from "react-native-blob-jsi-helper";
 
 // ...
 
-const result = await multiply(3, 7);
+const blob = ...
+const arrayBuffer = getArrayBuffer(blob);
 ```
 
 ## Contributing
