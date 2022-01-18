@@ -28,7 +28,7 @@ If you know me, you know that my libraries are as fast as they can get. react-na
 * **Zero** bridge-traffic.
 * **Zero** serialization/deserialization.
 * For a **10 kB** Buffer, I have measured **1ms**.
-* For a **12 MB** Buffer, I have measured **65ms**.
+* For a **12 MB** Buffer, I have measured **45ms**.
 
 ## Contributing
 
