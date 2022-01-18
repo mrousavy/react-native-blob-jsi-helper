@@ -30,7 +30,7 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
         }
     }
 
-    @ReactMethod
+    @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean install() {
         nativeInstall();
         return true;
