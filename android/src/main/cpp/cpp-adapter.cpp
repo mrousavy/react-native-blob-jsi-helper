@@ -13,7 +13,7 @@ std::string getPropertyAsStringOrEmptyFromObject(jsi::Object& object, const std:
 
 typedef u_int8_t byte;
 
-void install(jsi::Runtime& jsiRuntime, std::function<byte*(const std::string& blobId, int offset, int size)> getBytesFromBlob) {
+void install(jsi::Runtime& jsiRuntime, std::function<jbyte*(const std::string& blobId, int offset, int size)> getBytesFromBlob) {
     // getArrayBufferForBlobId()
     auto getArrayBufferForBlobId = jsi::Function::createFromHostFunction(jsiRuntime,
                                                                        jsi::PropNameID::forAscii(jsiRuntime, "getArrayBufferForBlobId"),
@@ -31,14 +31,14 @@ void install(jsi::Runtime& jsiRuntime, std::function<byte*(const std::string& bl
         auto offset = data.getProperty(runtime, "offset").asNumber();
         auto size = data.getProperty(runtime, "size").asNumber();
 
-        uint8_t* bytes = getBytesFromBlob(blobId.utf8(runtime), offset, size);
+        auto bytes = getBytesFromBlob(blobId.utf8(runtime), offset, size);
 
         size_t totalSize = size - offset;
         auto typedArray = TypedArray<TypedArrayKind::Uint8Array>(runtime, totalSize);
         auto arrayBuffer = typedArray.getBuffer(runtime);
                                                                            __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Copying memory...");
 
-        memcpy(arrayBuffer.data(runtime), bytes, 5);
+        memcpy(arrayBuffer.data(runtime), reinterpret_cast<byte*>(bytes), 5);
                                                                            __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Returned!");
 
         return typedArray;
@@ -50,7 +50,7 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env, jclass _, jlong jsiPtr, jobject instance) {
     auto instanceGlobal = env->NewGlobalRef(instance);
-    auto getBytesFromBlob = [=](const std::string& blobId, int offset, int size) -> byte* {
+    auto getBytesFromBlob = [=](const std::string& blobId, int offset, int size) -> jbyte* {
         if (!env) throw std::runtime_error("JNI Environment is gone!");
 
         // get java class
@@ -59,17 +59,18 @@ Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env,
         jmethodID getBufferJava = env->GetMethodID(clazz, "getBlobBuffer", "(Ljava/lang/String;II)[B");
         // call method
         auto jstring = env->NewStringUTF(blobId.c_str());
-        jobject boxedBytes = env->CallObjectMethod(instanceGlobal,
-                                                   getBufferJava,
-                                                   // arguments
-                                                   jstring,
-                                                   offset,
-                                                   size);
+        auto boxedBytes = (jbyteArray) env->CallObjectMethod(instanceGlobal,
+                                                             getBufferJava,
+                                                             // arguments
+                                                             jstring,
+                                                             offset,
+                                                             size);
         env->ReleaseStringUTFChars(jstring, blobId.c_str());
 
-        // cast jobject -> byte[] (unbox)
-        auto* bytes = (jbyte*)boxedBytes;
-        return (byte*)bytes;
+        jboolean isCopy = true;
+        jbyte* bytes = env->GetByteArrayElements(boxedBytes, &isCopy);
+        // TODO: Clean this up later? idk...
+        return bytes;
     };
 
     auto runtime = reinterpret_cast<jsi::Runtime*>(jsiPtr);
