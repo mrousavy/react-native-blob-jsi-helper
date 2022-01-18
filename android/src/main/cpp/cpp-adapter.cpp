@@ -29,7 +29,7 @@ void install(jsi::Runtime& jsiRuntime) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_reactnativeblobljsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env, jobject clazz, jlong jsiPtr, jstring path) {
+Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env, jobject clazz, jlong jsiPtr, jstring path) {
     auto runtime = reinterpret_cast<jsi::Runtime*>(jsiPtr);
     if (runtime) {
         install(*runtime);
