@@ -2,6 +2,8 @@
 
 A React Native library for accessing an ArrayBuffer of a Blob instance.
 
+[![Try Showtime!](./img/github-banner.png)](http://showtime.io)
+
 ## Installation
 
 ```sh
