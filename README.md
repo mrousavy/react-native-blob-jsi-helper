@@ -4,6 +4,8 @@
 
 A React Native library for directly accessing an ArrayBuffer of a Blob instance.
 
+> Note: This is a workaround. A long-term solution would be to implement this directly on the Blob instance in React Native Core.
+
 ## Installation
 
 ```sh
