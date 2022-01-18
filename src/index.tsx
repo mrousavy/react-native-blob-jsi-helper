@@ -31,11 +31,13 @@ function isBlobData(data: unknown): data is BlobData {
 }
 
 export function getArrayBuffer(blob: Blob): Uint8Array {
+  // @ts-expect-error React Native adds the hidden `_data` field.
   const data = blob._data;
   if (!isBlobData(data))
     throw new Error('Invalid Blob! Blob did not contain a valid ._data field!');
 
   console.log(`Getting ArrayBuffer for Blob #${data.blobId}...`);
+  // @ts-expect-error I inject that function using JSI.
   const buffer = global.getArrayBufferForBlobId(data) as Uint8Array;
   console.log(
     `Got ArrayBuffer for Blob #${data.blobId}! Size: ${buffer?.byteLength}`
