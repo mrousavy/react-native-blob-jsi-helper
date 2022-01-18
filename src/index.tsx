@@ -14,6 +14,31 @@ if (BlobJsiHelper == null) {
 
 BlobJsiHelper.install();
 
-export function getArrayBuffer(blob: Blob): ArrayBuffer {
-  return global.getArrayBufferForBlobId(blob.id);
+interface BlobData {
+  size: number;
+  offset: number;
+  blobId: string;
+}
+
+function isBlobData(data: unknown): data is BlobData {
+  return (
+    typeof data === 'object' &&
+    data != null &&
+    'size' in data &&
+    'offset' in data &&
+    'blobId' in data
+  );
+}
+
+export function getArrayBuffer(blob: Blob): Uint8Array {
+  const data = blob._data;
+  if (!isBlobData(data))
+    throw new Error('Invalid Blob! Blob did not contain a valid ._data field!');
+
+  console.log(`Getting ArrayBuffer for Blob #${data.blobId}...`);
+  const buffer = global.getArrayBufferForBlobId(data) as Uint8Array;
+  console.log(
+    `Got ArrayBuffer for Blob #${data.blobId}! Size: ${buffer?.byteLength}`
+  );
+  return buffer;
 }

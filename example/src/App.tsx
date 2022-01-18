@@ -1,13 +1,22 @@
 import * as React from 'react';
 
 import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-blob-jsi-helper';
+import { getArrayBuffer } from 'react-native-blob-jsi-helper';
 
 export default function App() {
   const [result, setResult] = React.useState<number | undefined>();
 
   React.useEffect(() => {
-    multiply(3, 7).then(setResult);
+    (async () => {
+      console.log('Fetching google..');
+      const x = await fetch('https://google.com');
+      console.log('Getting blob..');
+      const blob = await x.blob();
+      console.log(`Blob: ${Object.keys(blob)}..`);
+      console.log('Getting ArrayBuffer..');
+      const arrayBuffer = getArrayBuffer(blob);
+      console.log(`ArrayBuffer: ${arrayBuffer.byteLength}..`);
+    })();
   }, []);
 
   return (
