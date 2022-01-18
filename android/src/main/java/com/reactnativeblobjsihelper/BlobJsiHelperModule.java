@@ -25,17 +25,16 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
     static {
         try {
             // Used to load the 'native-lib' library on application startup.
-            System.loadLibrary("cpp");
+            System.loadLibrary("blobjsihelper");
         } catch (Exception ignored) {
         }
     }
 
-    // Example method
-    // See https://reactnative.dev/docs/native-modules-android
     @ReactMethod
-    public void multiply(int a, int b, Promise promise) {
-        promise.resolve(nativeMultiply(a, b));
+    public boolean install() {
+        nativeInstall();
+        return true;
     }
 
-    public static native int nativeMultiply(int a, int b);
+    public static native void nativeInstall();
 }
