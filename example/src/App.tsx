@@ -1,7 +1,10 @@
 import * as React from 'react';
 
 import { StyleSheet, View } from 'react-native';
-import { getArrayBufferForBlob } from 'react-native-blob-jsi-helper';
+import {
+  getArrayBufferForBlob,
+  getBlobForArrayBuffer,
+} from 'react-native-blob-jsi-helper';
 
 export default function App() {
   React.useEffect(() => {
@@ -23,6 +26,20 @@ export default function App() {
       const end = performance.now();
       console.log(
         `Got ArrayBuffer in ${end - start}ms! Size: ${arrayBuffer.byteLength}`
+      );
+
+      // @ts-expect-error performance actually exists.
+      // eslint-disable-next-line no-undef
+      const newStart = performance.now();
+      const newBlob = getBlobForArrayBuffer(arrayBuffer.buffer);
+      // @ts-expect-error performance actually exists.
+      // eslint-disable-next-line no-undef
+      const newEnd = performance.now();
+      console.log(
+        `Converted ArrayBuffer -> Blob in ${newEnd - newStart}ms! Blob ID: ${
+          // @ts-expect-error performance actually exists.
+          newBlob._data?.blobId
+        }`
       );
     })();
   }, []);
