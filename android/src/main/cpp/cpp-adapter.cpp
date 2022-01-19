@@ -10,7 +10,7 @@ typedef u_int8_t byte;
 
 void install(jsi::Runtime& jsiRuntime,
              std::function<byte*(const std::string& blobId, int offset, int size)> getBytesFromBlob,
-             std::function<std::string(byte* bytes)> createBlob) {
+             std::function<std::string(byte* bytes, size_t size)> createBlob) {
     // getArrayBufferForBlob()
     auto getArrayBufferForBlob = jsi::Function::createFromHostFunction(jsiRuntime,
                                                                        jsi::PropNameID::forAscii(jsiRuntime, "getArrayBufferForBlob"),
@@ -28,15 +28,17 @@ void install(jsi::Runtime& jsiRuntime,
         auto offset = data.getProperty(runtime, "offset").asNumber();
         auto size = data.getProperty(runtime, "size").asNumber();
 
+        __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Getting Blob bytes...");
         auto bytes = getBytesFromBlob(blobId.utf8(runtime), offset, size);
+        __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Got Blob bytes!");
 
         size_t totalSize = size - offset;
         auto typedArray = TypedArray<TypedArrayKind::Uint8Array>(runtime, totalSize);
         auto arrayBuffer = typedArray.getBuffer(runtime);
-                                                                           __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Copying memory...");
+        __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Copying memory...");
 
         memcpy(arrayBuffer.data(runtime), reinterpret_cast<byte*>(bytes), 5);
-                                                                           __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Returned!");
+        __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Returned!");
 
         return typedArray;
     });
@@ -58,7 +60,7 @@ void install(jsi::Runtime& jsiRuntime,
         auto size = arrayBuffer.size(runtime);
 
         __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Creating Blob...");
-        std::string blobId = createBlob(arrayBuffer.data(runtime));
+        std::string blobId = createBlob(arrayBuffer.data(runtime), size);
         __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Created Blob! Blob ID: %s", blobId.c_str());
 
         jsi::Object result(runtime);
@@ -82,10 +84,12 @@ std::string jstring2string(JNIEnv *env, jstring jStr) {
     jbyte* pBytes = env->GetByteArrayElements(stringJbytes, nullptr);
 
     std::string ret = std::string((char *)pBytes, length);
+    __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Got std::string");
     env->ReleaseByteArrayElements(stringJbytes, pBytes, JNI_ABORT);
 
     env->DeleteLocalRef(stringJbytes);
     env->DeleteLocalRef(stringClass);
+    __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Yay");
     return ret;
 }
 
@@ -108,15 +112,16 @@ Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env,
                                                              jstring,
                                                              offset,
                                                              size);
-        env->ReleaseStringUTFChars(jstring, blobId.c_str());
+        env->DeleteLocalRef(jstring);
 
         jboolean isCopy = true;
         jbyte* bytes = env->GetByteArrayElements(boxedBytes, &isCopy);
+        env->DeleteLocalRef(boxedBytes);
         // TODO: Clean this up later? idk...
         return reinterpret_cast<byte*>(bytes);
     };
 
-    auto createBlob = [=](byte* bytes) -> std::string {
+    auto createBlob = [=](byte* bytes, size_t size) -> std::string {
         if (!env) throw std::runtime_error("JNI Environment is gone!");
 
         // get java class
@@ -124,10 +129,13 @@ Java_com_reactnativeblobjsihelper_BlobJsiHelperModule_nativeInstall(JNIEnv *env,
         // get method in java class
         jmethodID getBufferJava = env->GetMethodID(clazz, "createBlob", "([B)Ljava/lang/String;");
         // call method
+        auto byteArray = env->NewByteArray(size);
+        env->SetByteArrayRegion(byteArray, 0, size, reinterpret_cast<jbyte*>(bytes));
         auto blobId = (jstring) env->CallObjectMethod(instanceGlobal,
                                                       getBufferJava,
                                                       // arguments
-                                                      bytes);
+                                                      byteArray);
+        env->DeleteLocalRef(byteArray);
 
         return jstring2string(env, blobId);
     };
