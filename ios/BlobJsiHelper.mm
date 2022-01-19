@@ -57,7 +57,8 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
                                                                         const jsi::Value* args,
                                                                         size_t count) -> jsi::Value {
     auto arrayBuffer = args[0].asObject(runtime).getArrayBuffer(runtime);
-    NSData* data = [NSData dataWithBytes:arrayBuffer.data(runtime) length:arrayBuffer.length(runtime)];
+    auto size = arrayBuffer.length(runtime);
+    NSData* data = [NSData dataWithBytes:arrayBuffer.data(runtime) length:size];
     
     RCTBlobManager* blobManager = [[RCTBridge currentBridge] moduleForClass:RCTBlobManager.class];
     NSString* blobId = [blobManager store:data];
@@ -65,8 +66,8 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
     jsi::Object result(runtime);
     auto blobIdString = jsi::String::createFromUtf8(runtime, [blobId cStringUsingEncoding:NSUTF8StringEncoding]);
     result.setProperty(runtime, "blobId", blobIdString);
-    result.setProperty(runtime, "offset", 0);
-    result.setProperty(runtime, "size", data.length);
+    result.setProperty(runtime, "offset", jsi::Value(0));
+    result.setProperty(runtime, "size", jsi::Value(static_cast<double>(size)));
     return result;
   });
   runtime.global().setProperty(runtime, "getBlobForArrayBuffer", getBlobForArrayBuffer);
