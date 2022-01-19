@@ -26,13 +26,13 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
   }
   auto& runtime = *jsiRuntime;
   
-  auto getArrayBufferForBlobId = jsi::Function::createFromHostFunction(runtime,
-                                                                       jsi::PropNameID::forUtf8(runtime, "getArrayBufferForBlobId"),
-                                                                       1,
-                                                                       [](jsi::Runtime& runtime,
-                                                                          const jsi::Value& thisArg,
-                                                                          const jsi::Value* args,
-                                                                          size_t count) -> jsi::Value {
+  auto getArrayBufferForBlob = jsi::Function::createFromHostFunction(runtime,
+                                                                     jsi::PropNameID::forUtf8(runtime, "getArrayBufferForBlob"),
+                                                                     1,
+                                                                     [](jsi::Runtime& runtime,
+                                                                        const jsi::Value& thisArg,
+                                                                        const jsi::Value* args,
+                                                                        size_t count) -> jsi::Value {
     auto data = args[0].asObject(runtime);
     auto blobId = data.getProperty(runtime, "blobId").asString(runtime).utf8(runtime);
     auto size = data.getProperty(runtime, "size").asNumber();
@@ -47,7 +47,7 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
     
     return typedArray;
   });
-  runtime.global().setProperty(runtime, "getArrayBufferForBlobId", getArrayBufferForBlobId);
+  runtime.global().setProperty(runtime, "getArrayBufferForBlob", getArrayBufferForBlob);
   
   auto getBlobForArrayBuffer = jsi::Function::createFromHostFunction(runtime,
                                                                      jsi::PropNameID::forUtf8(runtime, "getArrayBufferForBlobId"),
