@@ -36,7 +36,6 @@ export function getArrayBuffer(blob: Blob): Uint8Array {
   if (!isBlobData(data))
     throw new Error('Invalid Blob! Blob did not contain a valid ._data field!');
 
-  console.log(`Getting ArrayBuffer for Blob #${data.blobId}...`);
   // @ts-expect-error I inject that function using JSI.
   const buffer = global.getArrayBufferForBlobId(data) as Uint8Array;
   return buffer;
