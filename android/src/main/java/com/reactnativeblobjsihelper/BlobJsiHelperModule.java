@@ -29,11 +29,14 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean install() {
         try {
+            Log.i(NAME, "Loading C++ library...");
             System.loadLibrary("reactnativeblobjsihelper");
             JavaScriptContextHolder jsContext = getReactApplicationContext().getJavaScriptContextHolder();
+            Log.i(NAME, "Installing JSI Bindings...");
             nativeInstall(jsContext.get(), this);
             return true;
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            Log.e(NAME, "Failed to install JSI Bindings!", exception);
             return false;
         }
     }
@@ -48,6 +51,19 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
       }
       Log.d(NAME, "Resolved Blob #" + blobId + "! Size: " + bytes.length);
       return bytes;
+    }
+
+    public String createBlob(byte[] buffer) {
+      Log.d(NAME, "Creating " + buffer.length + " bytes Blob...");
+      BlobModule blobModule = getReactApplicationContext().getNativeModule(BlobModule.class);
+      if (blobModule == null) throw new RuntimeException("React Native's BlobModule was not found!");
+
+      String blobId = blobModule.store(buffer);
+      if (blobId == null) {
+        throw new RuntimeException("Failed to create Blob!");
+      }
+      Log.d(NAME, "Created Blob #" + blobId + "!");
+      return blobId;
     }
 
     public static native void nativeInstall(long jsiPointer, BlobJsiHelperModule instance);

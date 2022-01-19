@@ -30,13 +30,33 @@ function isBlobData(data: unknown): data is BlobData {
   );
 }
 
-export function getArrayBuffer(blob: Blob): Uint8Array {
+export function getArrayBufferForBlob(blob: Blob): Uint8Array {
   // @ts-expect-error React Native adds the hidden `_data` field.
   const data = blob._data;
   if (!isBlobData(data))
     throw new Error('Invalid Blob! Blob did not contain a valid ._data field!');
 
   // @ts-expect-error I inject that function using JSI.
-  const buffer = global.getArrayBufferForBlobId(data) as Uint8Array;
+  const buffer = global.getArrayBufferForBlob(data) as Uint8Array;
   return buffer;
+}
+
+export function getBlobForArrayBuffer(arrayBuffer: ArrayBuffer): Blob {
+  if (!(arrayBuffer instanceof ArrayBuffer)) {
+    throw new Error('arrayBuffer is not instance of ArrayBuffer!');
+  }
+  if (arrayBuffer.byteLength < 1)
+    throw new Error(
+      'Invalid ArrayBuffer! ArrayBuffer.byteLength has to be greater than 0!'
+    );
+
+  // @ts-expect-error I inject that function using JSI.
+  const blobData = global.getBlobForArrayBuffer(arrayBuffer) as Blob;
+  const data = { ...blobData, type: 'blob' };
+
+  return {
+    // @ts-expect-error Blob is actually differently typed
+    data: data,
+    _data: data,
+  };
 }
