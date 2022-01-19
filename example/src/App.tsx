@@ -1,7 +1,7 @@
 import * as React from 'react';
 
 import { StyleSheet, View } from 'react-native';
-import { getArrayBuffer } from 'react-native-blob-jsi-helper';
+import { getArrayBufferForBlob } from 'react-native-blob-jsi-helper';
 
 export default function App() {
   React.useEffect(() => {
@@ -17,7 +17,7 @@ export default function App() {
       // @ts-expect-error performance actually exists.
       // eslint-disable-next-line no-undef
       const start = performance.now();
-      const arrayBuffer = getArrayBuffer(blob);
+      const arrayBuffer = getArrayBufferForBlob(blob);
       // @ts-expect-error performance actually exists.
       // eslint-disable-next-line no-undef
       const end = performance.now();

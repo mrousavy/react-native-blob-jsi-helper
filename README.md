@@ -14,13 +14,26 @@ npm install react-native-blob-jsi-helper
 
 ## Usage
 
+### Accessing the ArrayBuffer of a Blob instance
+
 ```js
-import { getArrayBuffer } from "react-native-blob-jsi-helper";
+import { getArrayBufferForBlob } from "react-native-blob-jsi-helper";
 
 // ...
 
 const blob = ...
-const arrayBuffer = getArrayBuffer(blob);
+const arrayBuffer = getArrayBufferForBlob(blob);
+```
+
+### Creating a Blob from an ArrayBuffer
+
+```js
+import { getBlobForArrayBuffer } from "react-native-blob-jsi-helper";
+
+// ...
+
+const arrayBuffer = ...
+const blob = getBlobForArrayBuffer(arrayBuffer);
 ```
 
 ## Performance
