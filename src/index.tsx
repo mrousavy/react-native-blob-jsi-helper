@@ -39,8 +39,5 @@ export function getArrayBuffer(blob: Blob): Uint8Array {
   console.log(`Getting ArrayBuffer for Blob #${data.blobId}...`);
   // @ts-expect-error I inject that function using JSI.
   const buffer = global.getArrayBufferForBlobId(data) as Uint8Array;
-  console.log(
-    `Got ArrayBuffer for Blob #${data.blobId}! Size: ${buffer?.byteLength}`
-  );
   return buffer;
 }
