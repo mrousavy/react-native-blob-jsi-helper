@@ -29,11 +29,14 @@ public class BlobJsiHelperModule extends ReactContextBaseJavaModule {
     @ReactMethod(isBlockingSynchronousMethod = true)
     public boolean install() {
         try {
+            Log.i(NAME, "Loading C++ library...");
             System.loadLibrary("reactnativeblobjsihelper");
             JavaScriptContextHolder jsContext = getReactApplicationContext().getJavaScriptContextHolder();
+            Log.i(NAME, "Installing JSI Bindings...");
             nativeInstall(jsContext.get(), this);
             return true;
-        } catch (Exception ignored) {
+        } catch (Exception exception) {
+            Log.e(NAME, "Failed to install JSI Bindings!", exception);
             return false;
         }
     }
