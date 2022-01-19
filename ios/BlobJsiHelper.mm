@@ -1,5 +1,4 @@
 #import "BlobJsiHelper.h"
-#import "react-native-blob-jsi-helper.h"
 #import <React/RCTBlobManager.h>
 #import <React/RCTBridge+Private.h>
 #import <ReactCommon/RCTTurboModule.h>
@@ -12,7 +11,7 @@ RCT_EXPORT_MODULE()
 
 RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
 {
-  NSLog(@"Installing global.getArrayBufferForBlobId...");
+  NSLog(@"Installing ArrayBuffer <-> Blob Bindings...");
   RCTBridge* bridge = [RCTBridge currentBridge];
   RCTCxxBridge* cxxBridge = (RCTCxxBridge*)bridge;
   if (cxxBridge == nil) {
@@ -27,13 +26,13 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
   }
   auto& runtime = *jsiRuntime;
   
-  auto func = jsi::Function::createFromHostFunction(runtime,
-                                                    jsi::PropNameID::forUtf8(runtime, "getArrayBufferForBlobId"),
-                                                    1,
-                                                    [](jsi::Runtime& runtime,
-                                                       const jsi::Value& thisArg,
-                                                       const jsi::Value* args,
-                                                       size_t count) -> jsi::Value {
+  auto getArrayBufferForBlobId = jsi::Function::createFromHostFunction(runtime,
+                                                                       jsi::PropNameID::forUtf8(runtime, "getArrayBufferForBlobId"),
+                                                                       1,
+                                                                       [](jsi::Runtime& runtime,
+                                                                          const jsi::Value& thisArg,
+                                                                          const jsi::Value* args,
+                                                                          size_t count) -> jsi::Value {
     auto data = args[0].asObject(runtime);
     auto blobId = data.getProperty(runtime, "blobId").asString(runtime).utf8(runtime);
     auto size = data.getProperty(runtime, "size").asNumber();
@@ -48,9 +47,31 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
     
     return typedArray;
   });
-  runtime.global().setProperty(runtime, "getArrayBufferForBlobId", func);
+  runtime.global().setProperty(runtime, "getArrayBufferForBlobId", getArrayBufferForBlobId);
   
-  NSLog(@"Installed global.getArrayBufferForBlobId!");
+  auto getBlobForArrayBuffer = jsi::Function::createFromHostFunction(runtime,
+                                                                     jsi::PropNameID::forUtf8(runtime, "getArrayBufferForBlobId"),
+                                                                     1,
+                                                                     [](jsi::Runtime& runtime,
+                                                                        const jsi::Value& thisArg,
+                                                                        const jsi::Value* args,
+                                                                        size_t count) -> jsi::Value {
+    auto arrayBuffer = args[0].asObject(runtime).getArrayBuffer(runtime);
+    NSData* data = [NSData dataWithBytes:arrayBuffer.data(runtime) length:arrayBuffer.length(runtime)];
+    
+    RCTBlobManager* blobManager = [[RCTBridge currentBridge] moduleForClass:RCTBlobManager.class];
+    NSString* blobId = [blobManager store:data];
+    
+    jsi::Object result(runtime);
+    auto blobIdString = jsi::String::createFromUtf8(runtime, [blobId cStringUsingEncoding:NSUTF8StringEncoding]);
+    result.setProperty(runtime, "blobId", blobIdString);
+    result.setProperty(runtime, "offset", 0);
+    result.setProperty(runtime, "size", data.length);
+    return result;
+  });
+  runtime.global().setProperty(runtime, "getBlobForArrayBuffer", getBlobForArrayBuffer);
+  
+  NSLog(@"Installed ArrayBuffer <-> Blob Bindings!");
   return @true;
 }
 
