@@ -58,5 +58,6 @@ export function getBlobForArrayBuffer(arrayBuffer: ArrayBuffer): Blob {
     // @ts-expect-error Blob is actually differently typed
     data: data,
     _data: data,
+    type: 'blob',
   };
 }
