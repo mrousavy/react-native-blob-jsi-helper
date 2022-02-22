@@ -37,7 +37,7 @@ void install(jsi::Runtime& jsiRuntime,
         auto arrayBuffer = typedArray.getBuffer(runtime);
         __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Copying memory...");
 
-        memcpy(arrayBuffer.data(runtime), reinterpret_cast<byte*>(bytes), 5);
+        memcpy(arrayBuffer.data(runtime), reinterpret_cast<byte*>(bytes), totalSize);
         __android_log_print(ANDROID_LOG_INFO, "RNBLOBJSIHELPER", "Returned!");
 
         return typedArray;
