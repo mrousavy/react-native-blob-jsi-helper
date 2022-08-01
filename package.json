@@ -1,6 +1,6 @@
 {
   "name": "react-native-blob-jsi-helper",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A React Native library for accessing an ArrayBuffer of a Blob instance.",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
