@@ -20,6 +20,7 @@ export default function App() {
       // @ts-expect-error performance actually exists.
       // eslint-disable-next-line no-undef
       const start = performance.now();
+
       const arrayBuffer = getArrayBufferForBlob(blob);
       // @ts-expect-error performance actually exists.
       // eslint-disable-next-line no-undef
