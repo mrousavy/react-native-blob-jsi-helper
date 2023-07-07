@@ -71,6 +71,11 @@ void install(jsi::Runtime& jsiRuntime,
         return result;
     });
     jsiRuntime.global().setProperty(jsiRuntime, "getBlobForArrayBuffer", std::move(getBlobForArrayBuffer));
+
+
+    jsi::Object cacheCleaner = jsi::Object::createFromHostObject(jsiRuntime,
+                                                                std::make_shared<InvalidateCacheOnDestroy>(jsiRuntime));
+    jsiRuntime.global().setProperty(jsiRuntime, "__blobJSIHelperCacheCleaner", cacheCleaner);
 }
 
 std::string jstring2string(JNIEnv *env, jstring jStr) {

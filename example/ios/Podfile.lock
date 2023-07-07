@@ -266,7 +266,7 @@ PODS:
   - React-jsinspector (0.71.2)
   - React-logger (0.71.2):
     - glog
-  - react-native-blob-jsi-helper (0.2.3):
+  - react-native-blob-jsi-helper (0.3.0):
     - React
     - React-Core
   - React-perflogger (0.71.2)
@@ -473,11 +473,11 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
-  DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
+  DoubleConversion: cf9b38bf0b2d048436d9a82ad2abe1404f11e7de
   FBLazyVector: d58428b28fe1f5070fe993495b0e2eaf701d3820
   FBReactNativeSpec: 225fb0f0ab00493ce0731f954da3658638d9b191
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
-  glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  glog: 73c2498ac6884b13ede40eda8228cb1eee9d9d62
   hermes-engine: 6351580c827b3b03e5f25aadcf989f582d0b0a86
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
@@ -494,7 +494,7 @@ SPEC CHECKSUMS:
   React-jsiexecutor: c7e028406112db456ac3cf5720d266bc7bc20938
   React-jsinspector: ea8101acf525ec08b2d87ddf0637d45f8e3b4148
   React-logger: 97987f46779d8dd24656474ad0c43a5b459f31d6
-  react-native-blob-jsi-helper: b0f23b7bb0239b22781130782036596dc82479ab
+  react-native-blob-jsi-helper: 0f650a3c8af9b44d379d38b50733b75e9eafee23
   React-perflogger: c7ccda3d1d1da837f7ff4e54e816022a6803ee87
   React-RCTActionSheet: 01c125aebbad462a24228f68c584c7a921d6c28e
   React-RCTAnimation: 5277a9440acffc4a5b7baa6ae3880fe467277ae6
@@ -512,4 +512,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 78d5d4ce89f8531eafe89d96558614c55dc77ca7
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1

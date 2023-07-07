@@ -1,14 +1,20 @@
 //
-//  TypedArray.h
-//  @mrousavy
+//  JSITypedArray.h
+//  VisionCamera
 //
-//  Created by Marc Rousavy on 31.10.21.
-//  Originally created by Expo (expo-gl)
+//  Created by Marc Rousavy on 21.02.23.
+//  Copyright © 2023 mrousavy. All rights reserved.
 //
+
+
+// Copied & Adapted from https://github.com/expo/expo/blob/main/packages/expo-gl/common/EXTypedArrayApi.h
+// Credits to Expo
 
 #pragma once
 
 #include <jsi/jsi.h>
+#include <utility>
+#include <vector>
 
 namespace jsi = facebook::jsi;
 
@@ -66,10 +72,27 @@ struct typedArrayTypeMap<TypedArrayKind::Float64Array> {
   typedef double type;
 };
 
-void invalidateJsiPropNameIDCache();
+// Instance of this class will invalidate PropNameIDCache when destructor is called.
+// Attach this object to global in specific jsi::Runtime to make sure lifecycle of
+// the cache object is connected to the lifecycle of the js runtime
+class InvalidateCacheOnDestroy : public jsi::HostObject {
+ public:
+  explicit InvalidateCacheOnDestroy(jsi::Runtime &runtime);
+  virtual ~InvalidateCacheOnDestroy();
+  virtual jsi::Value get(jsi::Runtime &, const jsi::PropNameID &name) {
+    return jsi::Value::null();
+  }
+  virtual void set(jsi::Runtime &, const jsi::PropNameID &name, const jsi::Value &value) {}
+  virtual std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime &rt) {
+    return {};
+  }
+
+ private:
+  uintptr_t key;
+};
 
 class TypedArrayBase : public jsi::Object {
-public:
+ public:
   template <TypedArrayKind T>
   using ContentType = typename typedArrayTypeMap<T>::type;
 
@@ -98,7 +121,7 @@ public:
   std::vector<uint8_t> toVector(jsi::Runtime &runtime);
   jsi::ArrayBuffer getBuffer(jsi::Runtime &runtime) const;
 
-private:
+ private:
   template <TypedArrayKind>
   friend class TypedArray;
 };
@@ -108,22 +131,23 @@ TypedArrayBase getTypedArray(jsi::Runtime &runtime, const jsi::Object &jsObj);
 
 std::vector<uint8_t> arrayBufferToVector(jsi::Runtime &runtime, jsi::Object &jsObj);
 void arrayBufferUpdate(
-                       jsi::Runtime &runtime,
-                       jsi::ArrayBuffer &buffer,
-                       std::vector<uint8_t> data,
-                       size_t offset);
+    jsi::Runtime &runtime,
+    jsi::ArrayBuffer &buffer,
+    std::vector<uint8_t> data,
+    size_t offset);
 
 template <TypedArrayKind T>
 class TypedArray : public TypedArrayBase {
-public:
+ public:
+  explicit TypedArray(TypedArrayBase &&base);
   TypedArray(jsi::Runtime &runtime, size_t size);
   TypedArray(jsi::Runtime &runtime, std::vector<ContentType<T>> data);
-  TypedArray(TypedArrayBase &&base);
   TypedArray(TypedArray &&) = default;
   TypedArray &operator=(TypedArray &&) = default;
 
   std::vector<ContentType<T>> toVector(jsi::Runtime &runtime);
   void update(jsi::Runtime &runtime, const std::vector<ContentType<T>> &data);
+  uint8_t* data(jsi::Runtime &runtime);
 };
 
 template <TypedArrayKind T>

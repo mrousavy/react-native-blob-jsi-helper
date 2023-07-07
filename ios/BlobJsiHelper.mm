@@ -50,7 +50,7 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
   runtime.global().setProperty(runtime, "getArrayBufferForBlob", getArrayBufferForBlob);
   
   auto getBlobForArrayBuffer = jsi::Function::createFromHostFunction(runtime,
-                                                                     jsi::PropNameID::forUtf8(runtime, "getArrayBufferForBlobId"),
+                                                                     jsi::PropNameID::forUtf8(runtime, "getBlobForArrayBuffer"),
                                                                      1,
                                                                      [](jsi::Runtime& runtime,
                                                                         const jsi::Value& thisArg,
@@ -71,6 +71,10 @@ RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD(install)
     return result;
   });
   runtime.global().setProperty(runtime, "getBlobForArrayBuffer", getBlobForArrayBuffer);
+  
+  jsi::Object cacheCleaner = jsi::Object::createFromHostObject(runtime,
+                                                               std::make_shared<InvalidateCacheOnDestroy>(runtime));
+  runtime.global().setProperty(runtime, "__blobJSIHelperCacheCleaner", cacheCleaner);
   
   NSLog(@"Installed ArrayBuffer <-> Blob Bindings!");
   return @true;
