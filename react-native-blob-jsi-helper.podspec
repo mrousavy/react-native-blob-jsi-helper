@@ -14,6 +14,10 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/mrousavy/react-native-blob-jsi-helper.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,mm}", "cpp/**/*.{h,cpp}"
+  
+  s.pod_target_xcconfig = {
+    "CLANG_CXX_LANGUAGE_STANDARD" => "c++17"
+  }
 
   s.dependency "React-Core"
   s.dependency "React"
